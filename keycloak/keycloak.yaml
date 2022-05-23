@@ -1,0 +1,13 @@
+apiVersion: keycloak.org/v1alpha1
+kind: Keycloak
+metadata:
+  name: example-keycloak
+  labels:
+   app: example-keycloak
+spec:
+  instances: 2
+  externalAccess:
+    enabled: False
+    host: keycloak.localhost
+    tlsTermination: reencrypt
+
