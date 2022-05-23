@@ -1,0 +1,13 @@
+load('ext://git_resource', 'git_checkout')
+
+_ext_dir = os.getcwd()
+
+def crunchy_operator():
+    crunchy_operator_dir = git_checkout('https://github.com/CrunchyData/postgres-operator-examples', '%s/.tilt/crunchy-operator' % _ext_dir)
+
+    ns_dir = '%s/kustomize/install/namespace' % crunchy_operator_dir
+    default_dir = '%s/kustomize/install/default' % crunchy_operator_dir
+
+    k8s_yaml([kustomize(ns_dir), kustomize(default_dir)])
+    k8s_resource(new_name="postgres-operator", workload="pgo", labels=["postgres-operator"])
+    k8s_resource(workload="pgo-upgrade", labels=["postgres-operator"])
