@@ -8,7 +8,7 @@ def deploy_component(name, directory):
 
 
 def keycloak():
-    keycloak_operator_dir = git_checkout('https://github.com/keycloak/keycloak-operator.git', '../.tilt/keycloak-operator')
+    keycloak_operator_dir = git_checkout('https://github.com/keycloak/keycloak-operator.git', '%s/.tilt/keycloak-operator' % _ext_dir)
     keycloak_deploy_dir = '%s/deploy' % keycloak_operator_dir
     keycloak_crds = listdir("%s/deploy/crds" % keycloak_operator_dir)
     keycloak_items = ['role', 'role_binding', 'service_account', 'operator']
