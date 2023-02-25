@@ -19,7 +19,9 @@ def keycloak():
     keycloak_realm_items = ['role', 'role_binding', 'service_account', 'operator']
     k8s_yaml(keycloak_realm_crds)
     [k8s_yaml(deploy_component(component, keycloak_realm_deploy_dir)) for component in keycloak_realm_items]
+    k8s_yaml(["%s/issuer.yaml" % _ext_dir])
+    k8s_resource(new_name="selfsigned-issuer", objects=["selfsigned-issuer:issuer", "my-selfsigned-ca:certificate", "my-ca-issuer:issuer"], labels=["keycloak"])
     k8s_yaml(["%s/keycloak.yaml" % _ext_dir, "%s/keycloak-ingress.yaml" % _ext_dir])
-    k8s_resource(new_name="keycloak", objects=["example-keycloak"], port_forwards=["9990"], labels=["keycloak"])
-    k8s_resource(new_name="keycloak-operator", workload="keycloak-operator", labels=["keycloak"])
-    k8s_resource(new_name="keycloak-realm-operator", workload="keycloak-realm-operator", labels=["keycloak"])
+    k8s_resource(new_name="keycloak", objects=["example-keycloak", "keycloak:ingress"], port_forwards=["9990"], labels=["keycloak"])
+    k8s_resource(new_name="keycloak-operator", workload="keycloak-operator", labels=["keycloak"], objects=["keycloakrealmimportcontroller-role-binding:rolebinding", "keycloakcontroller-role-binding:rolebinding", "keycloak-operator-view:rolebinding", "keycloak-operator-role-binding:rolebinding", "keycloakrealmimportcontroller-cluster-role:clusterrole", "keycloakcontroller-cluster-role:clusterrole", "keycloak-operator-role:role", "keycloak-operator:serviceaccount", "keycloakrealmimports.k8s.keycloak.org:customresourcedefinition", "keycloaks.k8s.keycloak.org:customresourcedefinition"]) 
+    k8s_resource(new_name="keycloak-realm-operator", workload="keycloak-realm-operator", labels=["keycloak"], objects=["keycloak-realm-operator:rolebinding", "keycloak-realm-operator:role", "keycloak-realm-operator:serviceaccount", "keycloakusers.legacy.k8s.keycloak.org:customresourcedefinition", "keycloakrealms.legacy.k8s.keycloak.org:customresourcedefinition", "keycloakclients.legacy.k8s.keycloak.org:customresourcedefinition", "externalkeycloaks.legacy.k8s.keycloak.org:customresourcedefinition"])
