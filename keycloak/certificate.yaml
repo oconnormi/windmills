@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: keycloak
+spec:
+  commonName: keycloak
+  secretName: keycloak-http-tls
+  dnsNames:
+    - keycloak.localhost
+  issuerRef:
+    name: my-ca-issuer
+    kind: Issuer
+    group: cert-manager.io

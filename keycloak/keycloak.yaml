@@ -6,6 +6,8 @@ metadata:
    app: example-keycloak
 spec:
   instances: 2
+  http:
+    tlsSecret: keycloak-http-tls
   hostname:
     hostname: keycloak.localhost
   ingress:
