@@ -8,12 +8,22 @@ def deploy_component(name, directory):
 
 
 def keycloak():
-    keycloak_operator_dir = git_checkout('https://github.com/keycloak/keycloak-operator.git', '%s/.tilt/keycloak-operator' % _ext_dir)
-    keycloak_deploy_dir = '%s/deploy' % keycloak_operator_dir
-    keycloak_crds = listdir("%s/deploy/crds" % keycloak_operator_dir)
-    keycloak_items = ['role', 'role_binding', 'service_account', 'operator']
-    k8s_yaml(keycloak_crds)
-    [k8s_yaml(deploy_component(component, keycloak_deploy_dir)) for component in keycloak_items]
+    keycloak_k8s_resources = git_checkout('https://github.com/keycloak/keycloak-k8s-resources.git#tags/21.0.0', '%s/.tilt/keycloak-k8s-resources' % _ext_dir)
+    keycloak_operator_crds = ['%s/kubernetes/keycloaks.k8s.keycloak.org-v1.yml' % keycloak_k8s_resources, '%s/kubernetes/keycloakrealmimports.k8s.keycloak.org-v1.yml' % keycloak_k8s_resources]
+    k8s_yaml(keycloak_operator_crds)
+    keycloak_operator_resources = ['%s/kubernetes/kubernetes.yml' % keycloak_k8s_resources]
+    k8s_yaml(keycloak_operator_resources)
+    keycloak_realm_operator_dir = git_checkout('https://github.com/keycloak/keycloak-realm-operator', '%s/.tilt/keycloak-realm-operator' % _ext_dir)
+    keycloak_realm_deploy_dir = '%s/deploy' % keycloak_realm_operator_dir
+    keycloak_realm_crds = listdir("%s/deploy/crds" % keycloak_realm_operator_dir)
+    keycloak_realm_items = ['role', 'role_binding', 'service_account', 'operator']
+    k8s_yaml(keycloak_realm_crds)
+    [k8s_yaml(deploy_component(component, keycloak_realm_deploy_dir)) for component in keycloak_realm_items]
+    k8s_yaml(["%s/issuer.yaml" % _ext_dir])
+    k8s_resource(new_name="selfsigned-issuer", objects=["selfsigned-issuer:issuer", "my-selfsigned-ca:certificate", "my-ca-issuer:issuer"], labels=["keycloak"])
+    k8s_yaml(["%s/certificate.yaml" % _ext_dir])
+    k8s_resource(new_name="keycloak-certificate", objects=["keycloak:certificate"], labels=["keycloak"])
     k8s_yaml(["%s/keycloak.yaml" % _ext_dir, "%s/keycloak-ingress.yaml" % _ext_dir])
-    k8s_resource(new_name="keycloak", objects=["example-keycloak"], port_forwards=["9990"], labels=["keycloak"])
-    k8s_resource(new_name="keycloak-operator", workload="keycloak-operator", labels=["keycloak"])
+    k8s_resource(new_name="keycloak", objects=["example-keycloak", "keycloak:ingress"], port_forwards=["8443"], labels=["keycloak"])
+    k8s_resource(new_name="keycloak-operator", workload="keycloak-operator", labels=["keycloak"], objects=["keycloakrealmimportcontroller-role-binding:rolebinding", "keycloakcontroller-role-binding:rolebinding", "keycloak-operator-view:rolebinding", "keycloak-operator-role-binding:rolebinding", "keycloakrealmimportcontroller-cluster-role:clusterrole", "keycloakcontroller-cluster-role:clusterrole", "keycloak-operator-role:role", "keycloak-operator:serviceaccount", "keycloakrealmimports.k8s.keycloak.org:customresourcedefinition", "keycloaks.k8s.keycloak.org:customresourcedefinition"]) 
+    k8s_resource(new_name="keycloak-realm-operator", workload="keycloak-realm-operator", labels=["keycloak"], objects=["keycloak-realm-operator:rolebinding", "keycloak-realm-operator:role", "keycloak-realm-operator:serviceaccount", "keycloakusers.legacy.k8s.keycloak.org:customresourcedefinition", "keycloakrealms.legacy.k8s.keycloak.org:customresourcedefinition", "keycloakclients.legacy.k8s.keycloak.org:customresourcedefinition", "externalkeycloaks.legacy.k8s.keycloak.org:customresourcedefinition"])

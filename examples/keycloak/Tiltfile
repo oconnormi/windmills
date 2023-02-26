@@ -1,0 +1,6 @@
+
+repo_dir = os.path.abspath("../../")
+v1alpha1.extension_repo(name='windmills', url='file://%s' % repo_dir)
+v1alpha1.extension(name='keycloak', repo_name='windmills', repo_path='keycloak')
+load('ext://keycloak', 'keycloak')
+keycloak()
